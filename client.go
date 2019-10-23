@@ -50,6 +50,8 @@ func (c *RestClient) Post(url string, headers map[string]string, data string) (*
 	c.options = mergeOptions(defaultOptions, c.options)
 	if headers != nil {
 		c.Headers = headers
+	} else {
+		c.Headers = make(map[string]string)
 	}
 	req.WithHeaders(c.Headers)
 	setOptions(req, c)
