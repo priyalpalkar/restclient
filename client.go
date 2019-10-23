@@ -48,6 +48,9 @@ func (c *RestClient) Post(url string, headers map[string]string, data string) (*
 	//Logging failures etc.
 	//Handle nil values
 	var req *httpclient.HttpClient
+	if c.options == nil {
+		c.options = make(map[string]string)
+	}
 	c.options = mergeOptions(defaultOptions, c.options)
 	// if headers != nil {
 	// 	c.Headers = headers
