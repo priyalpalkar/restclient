@@ -46,14 +46,15 @@ func (c *RestClient) Post(url string, headers map[string]string, data string) (*
 	//Handle definitions in YML files
 	//Add the text, content and Json() methods to the response structure
 	//Logging failures etc.
+	//Handle nil values
 	var req *httpclient.HttpClient
 	c.options = mergeOptions(defaultOptions, c.options)
-	if headers != nil {
-		c.Headers = headers
-	} else {
-		c.Headers = make(map[string]string)
-	}
-	req.WithHeaders(c.Headers)
+	// if headers != nil {
+	// 	c.Headers = headers
+	// } else {
+	// 	c.Headers = make(map[string]string)
+	// }
+	// req.WithHeaders(c.Headers)
 	setOptions(req, c)
 	fmt.Println(c.Headers, c.options)
 	response, err := req.Post(url, nil)
