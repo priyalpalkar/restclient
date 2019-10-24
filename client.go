@@ -2,16 +2,26 @@ package client
 
 import (
 	"github.com/ddliu/go-httpclient"
-	"encoding/json"
 	"strings"
 	"fmt"
 )
 
+const (
+	TIMEOUT    = 10
+	VERIFY  = false
+	FILE  = false
+	DEBUG_MODE = false
+	LOG_LEVEL = "INFO"
+	ALLOW_REDIRECTS = false
+)
+
 var defaultOptions = map[string] interface{}{
-	"allowRedirects": false,
-	"timeout": 10,
-	"verify": true,
-	"file": false,
+	"allowRedirects": ALLOW_REDIRECTS,
+	"timeout": TIMEOUT,
+	"verify": VERIFY,
+	"file": FILE,
+	"debugMode": DEBUG_MODE,
+	"logLevel": LOG_LEVEL,
 }
 
 type RestClient struct {
@@ -24,36 +34,6 @@ type RestClient struct {
 
 type RestResponse struct {
 	*httpclient.Response
-}
-
-func setOptions(req *httpclient.HttpClient, c *RestClient) {
-	// req.WithOption(httpclient.OPT_FOLLOWLOCATION, c.RequestOptions["allowRedirects"])
-	// req.WithOption(httpclient.OPT_CONNECTTIMEOUT, c.RequestOptions["timeout"])
-	// req.WithOption(httpclient.OPT_TIMEOUT, c.RequestOptions["timeout"])
-	// req.WithOption(httpclient.OPT_UNSAFE_TLS, c.RequestOptions["verify"])
-}
-
-func mergeOptions(options ...map[string]interface{}) map[string]interface{} {
-	rst := make(map[string]interface{})
-	for _, m := range options {
-		for k, v := range m {
-			rst[k] = v
-		}
-	}
-	return rst
-}
-
-func preProcess(c *RestClient, headers map[string]string) {
-	if c.RequestOptions == nil {
-		c.RequestOptions = defaultOptions
-	} else {
-		c.RequestOptions = mergeOptions(defaultOptions, c.RequestOptions)
-	}
-	if headers != nil {
-		c.Headers = headers
-	} else if c.Headers != nil {
-		c.Headers = make(map[string]string)
-	}
 }
 
 func postRequest(c *RestClient, req *httpclient.HttpClient) (*RestResponse, error) {
@@ -83,9 +63,7 @@ func postRequest(c *RestClient, req *httpclient.HttpClient) (*RestResponse, erro
 }
 
 func (c *RestClient) Post(url string, headers map[string]string, data interface{}) (*RestResponse, error) {
-	//Handle definitions in YML files
-	//Logging failures etc.
-	//Handle nil values
+	//TODO Add logging, support constructing requests from YAML files (or use existing library for this)
 	var req *httpclient.HttpClient
 	if url == "" {
 		return nil, fmt.Errorf("URL cannot be blank")
@@ -96,7 +74,11 @@ func (c *RestClient) Post(url string, headers map[string]string, data interface{
 	c.url = url
 	req.WithHeaders(c.Headers)
 	setOptions(req, c)
+	c.logRequestData("POST")
 	response, err := postRequest(c, req)
+	if err == nil {
+		response.logResponseData("POST")
+	}
 	return response, err
 }
 
@@ -111,26 +93,11 @@ func (c *RestClient) Get(url string, headers map[string]string, params map[strin
 	c.url = url
 	req.WithHeaders(c.Headers)
 	setOptions(req, c)
+	c.logRequestData("GET")
 	response, err := req.Get(c.url, c.params)
 	res := &RestResponse{response}
+	if err == nil {
+		res.logResponseData("GET")
+	}
 	return res, err
-}
-
-func (res *RestResponse) Text() (string, error) {
-	result, err := res.ToString()
-	return result, err
-}
-
-func (res *RestResponse) Content() ([]byte, error) {
-	result, err := res.ReadAll()
-	return result, err
-}
-
-func (res *RestResponse) Json(target interface{}) (error) {
-    defer res.Body.Close()
-    return json.NewDecoder(res.Body).Decode(target)
-}
-
-func (res *RestResponse) Headers() (interface{}) {
-	return res.Header
 }
