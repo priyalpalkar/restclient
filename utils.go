@@ -58,16 +58,16 @@ func (res *RestResponse) Headers() (interface{}) {
 
 func (c *RestClient) logRequestData(method string) () {
 //Would be modified to use go-kestrel logging
-	fmt.Printf("Received HTTP %v for %v", c.url, method)
+	fmt.Printf("Received HTTP %v for %v\n", c.url, method)
 	for header, val := range c.Headers {
-		fmt.Printf("Header: %v:%v",header, val)
+		fmt.Println("Header: ",header, val)
 	}
 }
 
 func (r *RestResponse) logResponseData(method string) () {
 //Would be modified to use go-kestrel logging
-	fmt.Printf("Received HTTP response for %v with status %v", method, r.Status)
+	fmt.Println("Received HTTP response for %v with status %v\n", method, r.Status)
 	for header, val := range r.Header {
-		fmt.Printf("Header: %v:%v",header, val)
+		fmt.Printf("Header: %v:%v\n",header, val)
 	}
 }
